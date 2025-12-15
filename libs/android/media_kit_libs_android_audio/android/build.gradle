@@ -1,6 +1,4 @@
 import java.io.File
-import java.nio.file.Files
-import java.security.MessageDigest
 
 group 'com.alexmercerind.media_kit_libs_android_audio'
 version '1.0'
@@ -56,38 +54,22 @@ task downloadDependencies(type: Exec)  {
         }
         outputDir.mkdirs()
 
-        // Download all *.jar dependencies & verify their MD5 checksums.
+        // Download all *.jar dependencies without checksum verification.
         def filesToDownload = [
-            ["url": "https://github.com/media-kit/libmpv-android-audio-build/releases/download/v1.1.5/default-arm64-v8a.jar", "md5": "46f80b1f48ec7df4b5232b2f183ef012", "destination": file("$buildDir/v1.1.5/default-arm64-v8a.jar")],
-            ["url": "https://github.com/media-kit/libmpv-android-audio-build/releases/download/v1.1.5/default-armeabi-v7a.jar", "md5": "5655d8b66001ba374ca73e6205f62737", "destination": file("$buildDir/v1.1.5/default-armeabi-v7a.jar")],
-            ["url": "https://github.com/media-kit/libmpv-android-audio-build/releases/download/v1.1.5/default-x86_64.jar", "md5": "0775b74a81445784aed41180816e55be", "destination": file("$buildDir/v1.1.5/default-x86_64.jar")],
-            ["url": "https://github.com/media-kit/libmpv-android-audio-build/releases/download/v1.1.5/default-x86.jar", "md5": "e77160289385403425b1516f0dd692b0", "destination": file("$buildDir/v1.1.5/default-x86.jar")]
+            ["url": "https://github.com/pwxiao/libmpv-android-video-build/releases/download/pwxiao/full-arm64-v8a.jar", "destination": file("$buildDir/v1.1.5/default-arm64-v8a.jar")],
+            ["url": "https://github.com/pwxiao/libmpv-android-video-build/releases/download/pwxiao/full-armeabi-v7a.jar", "destination": file("$buildDir/v1.1.5/default-armeabi-v7a.jar")],
+            ["url": "https://github.com/pwxiao/libmpv-android-video-build/releases/download/pwxiao/full-x86_64.jar", "destination": file("$buildDir/v1.1.5/default-x86_64.jar")],
+            ["url": "https://github.com/pwxiao/libmpv-android-video-build/releases/download/pwxiao/full-x86.jar", "destination": file("$buildDir/v1.1.5/default-x86.jar")]
         ]
 
         filesToDownload.each { fileInfo ->
             def destFile = fileInfo.destination
-
-            if (destFile.exists()) {
-                def calculatedMD5 = MessageDigest.getInstance("MD5").digest(Files.readAllBytes(destFile.toPath())).encodeHex().toString()
-
-                if (calculatedMD5 != fileInfo.md5) {
-                    destFile.delete()
-                    println "MD5 mismatch. File deleted: ${destFile}"
-                }
-
-            }
-
             if (!destFile.exists()) {
                 destFile.parentFile.mkdirs()
                 println "Downloading file from: ${fileInfo.url}"
                 destFile.withOutputStream { os ->
                     os << new URL(fileInfo.url).openStream()
                 }
-                def calculatedMD5 = MessageDigest.getInstance("MD5").digest(Files.readAllBytes(destFile.toPath())).encodeHex().toString()
-                if (calculatedMD5 != fileInfo.md5) {
-                    throw new GradleException("MD5 verification failed for ${destFile}")
-                }
-               
             }
 
             copy {
